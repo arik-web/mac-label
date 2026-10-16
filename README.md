@@ -10,10 +10,10 @@ Menu bar app that shows which Mac you are on — for desks with several Macs beh
 ## Install on each Mac
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/arik-web/mac-label/main/scripts/install.sh | bash
+gh api repos/arik-web/mac-label/contents/scripts/install.sh -H 'Accept: application/vnd.github.raw' | bash
 ```
 
-Private repo? Use `gh` (installer uses it when present) or download `MacLabel.zip` from Releases into /Applications.
+Needs `gh` logged in (repo is private). No gh: download `MacLabel.zip` from Releases, unzip into /Applications.
 
 ## Build
 
