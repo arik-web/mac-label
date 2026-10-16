@@ -5,6 +5,7 @@ Menu bar app that shows which Mac you are on — for desks with several Macs beh
 - Menu bar title = this Mac's name.
 - **Show name on screen** (⌘O in menu) → click-through label, top-left of every display, all Spaces, over full-screen apps.
 - **Edit name…** → set any label per Mac. Empty = macOS Computer Name.
+- **Text color** (presets + Custom… color picker), **Text size** (16–72 pt), **Background** (none → solid).
 - **Launch at login** toggle.
 
 ## Install on each Mac

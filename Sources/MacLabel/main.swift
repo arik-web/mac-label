@@ -4,6 +4,7 @@ import ServiceManagement
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let settings = Settings()
     private let overlay = Overlay()
+    private lazy var styleMenu = StyleMenu(settings: settings) { [weak self] in self?.refresh() }
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
     private let overlayItem = NSMenuItem(title: "Show name on screen",
@@ -25,6 +26,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                 keyEquivalent: "q"))
         menu.items.filter { $0.action != #selector(NSApplication.terminate(_:)) }
             .forEach { $0.target = self }
+        menu.insertItem(.separator(), at: 2)
+        styleMenu.items.reversed().forEach { menu.insertItem($0, at: 2) }
         statusItem.menu = menu
 
         NotificationCenter.default.addObserver(
@@ -40,8 +43,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         overlayItem.state = settings.overlayVisible ? .on : .off
         resetItem.isEnabled = settings.hasCustomName
         loginItem.state = SMAppService.mainApp.status == .enabled ? .on : .off
+        styleMenu.refreshChecks()
         if settings.overlayVisible {
-            overlay.show(text: name)
+            overlay.show(text: name, style: styleMenu.style)
         } else {
             overlay.hide()
         }

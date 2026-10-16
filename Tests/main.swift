@@ -46,5 +46,30 @@ check(!s2.overlayVisible, "overlay off by default")
 s2.overlayVisible = true
 check(s2.overlayVisible, "overlay toggles on")
 
+// hex parsing
+check(Settings.normalizeHex("#ffcc00") == "FFCC00", "normalizes hex")
+check(Settings.normalizeHex("FFF") == nil, "rejects short hex")
+check(Settings.normalizeHex("GGGGGG") == nil, "rejects non-hex")
+let rgb = Settings.rgb(fromHex: "FF8000")
+check(rgb.red == 1 && rgb.blue == 0 && abs(rgb.green - 128.0 / 255) < 0.001, "hex to rgb")
+
+// style defaults and persistence
+let s3 = freshSettings()
+check(s3.textColorHex == "FFFFFF", "color defaults to white")
+check(s3.fontSize == Settings.defaultFontSize, "size default")
+check(s3.backgroundOpacity == Settings.defaultOpacity, "opacity default")
+s3.textColorHex = "#00ff00"
+check(s3.textColorHex == "00FF00", "color stored")
+s3.textColorHex = "nope"
+check(s3.textColorHex == "00FF00", "bad color ignored")
+s3.fontSize = 500
+check(s3.fontSize == Settings.fontSizeRange.upperBound, "size clamped high")
+s3.fontSize = 32
+check(s3.fontSize == 32, "size stored")
+s3.backgroundOpacity = -1
+check(s3.backgroundOpacity == 0, "opacity clamped low")
+s3.backgroundOpacity = 0.25
+check(s3.backgroundOpacity == 0.25, "opacity stored")
+
 print(failures == 0 ? "OK all tests passed" : "\(failures) failure(s)")
 exit(failures == 0 ? 0 : 1)

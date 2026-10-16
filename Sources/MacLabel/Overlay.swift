@@ -1,16 +1,21 @@
 import AppKit
 
+struct LabelStyle {
+    var color: NSColor
+    var fontSize: CGFloat
+    var backgroundOpacity: CGFloat
+}
+
 /// One click-through label window per display, pinned to the top-left corner
 /// just under the menu bar, visible on every Space and over full-screen apps.
 final class Overlay {
     private static let margin: CGFloat = 12
-    private static let fontSize: CGFloat = 22
 
     private var windows: [NSWindow] = []
 
-    func show(text: String) {
+    func show(text: String, style: LabelStyle) {
         hide()
-        windows = NSScreen.screens.map { Overlay.makeWindow(text: text, screen: $0) }
+        windows = NSScreen.screens.map { Overlay.makeWindow(text: text, style: style, screen: $0) }
         windows.forEach { $0.orderFrontRegardless() }
     }
 
@@ -19,21 +24,26 @@ final class Overlay {
         windows = []
     }
 
-    private static func makeWindow(text: String, screen: NSScreen) -> NSWindow {
+    private static func makeWindow(text: String, style: LabelStyle, screen: NSScreen) -> NSWindow {
         let label = NSTextField(labelWithString: text)
-        label.font = .systemFont(ofSize: fontSize, weight: .bold)
-        label.textColor = .white
+        label.font = .systemFont(ofSize: style.fontSize, weight: .bold)
+        label.textColor = style.color
         label.sizeToFit()
+        // Keeps light text readable when the box behind it is fully transparent.
+        let shadow = NSShadow()
+        shadow.shadowColor = .black.withAlphaComponent(0.8)
+        shadow.shadowBlurRadius = 3
+        label.shadow = shadow
 
-        let padding = NSSize(width: 14, height: 8)
+        let padding = NSSize(width: style.fontSize * 0.6, height: style.fontSize * 0.35)
         let size = NSSize(width: label.frame.width + padding.width * 2,
                           height: label.frame.height + padding.height * 2)
         label.frame.origin = NSPoint(x: padding.width, y: padding.height)
 
         let background = NSView(frame: NSRect(origin: .zero, size: size))
         background.wantsLayer = true
-        background.layer?.backgroundColor = NSColor.black.withAlphaComponent(0.6).cgColor
-        background.layer?.cornerRadius = 10
+        background.layer?.backgroundColor = NSColor.black.withAlphaComponent(style.backgroundOpacity).cgColor
+        background.layer?.cornerRadius = style.fontSize * 0.45
         background.addSubview(label)
 
         // visibleFrame excludes the menu bar, so the label sits right under it.

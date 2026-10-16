@@ -49,4 +49,61 @@ struct Settings {
         get { defaults.bool(forKey: Settings.overlayKey) }
         nonmutating set { defaults.set(newValue, forKey: Settings.overlayKey) }
     }
+
+    // MARK: Label style
+
+    static let colorKey = "textColor"
+    static let sizeKey = "fontSize"
+    static let opacityKey = "backgroundOpacity"
+
+    static let defaultColorHex = "FFFFFF"
+    static let defaultFontSize = 22.0
+    static let defaultOpacity = 0.6
+    static let fontSizeRange = 10.0...120.0
+
+    /// "#ffcc00" / "FFCC00" → "FFCC00"; nil when not six hex digits.
+    static func normalizeHex(_ raw: String) -> String? {
+        let hex = raw.trimmingCharacters(in: .whitespaces)
+            .replacingOccurrences(of: "#", with: "").uppercased()
+        guard hex.count == 6, UInt32(hex, radix: 16) != nil else { return nil }
+        return hex
+    }
+
+    /// RGB components in 0...1 for a normalized hex string.
+    static func rgb(fromHex hex: String) -> (red: Double, green: Double, blue: Double) {
+        let value = UInt32(normalizeHex(hex) ?? defaultColorHex, radix: 16) ?? 0xFFFFFF
+        return (Double((value >> 16) & 0xFF) / 255,
+                Double((value >> 8) & 0xFF) / 255,
+                Double(value & 0xFF) / 255)
+    }
+
+    var textColorHex: String {
+        get { defaults.string(forKey: Settings.colorKey).flatMap(Settings.normalizeHex) ?? Settings.defaultColorHex }
+        nonmutating set {
+            if let hex = Settings.normalizeHex(newValue) { defaults.set(hex, forKey: Settings.colorKey) }
+        }
+    }
+
+    var fontSize: Double {
+        get {
+            guard let size = defaults.object(forKey: Settings.sizeKey) as? Double else { return Settings.defaultFontSize }
+            return size.clamped(to: Settings.fontSizeRange)
+        }
+        nonmutating set { defaults.set(newValue.clamped(to: Settings.fontSizeRange), forKey: Settings.sizeKey) }
+    }
+
+    /// Opacity of the dark box behind the text: 0 = text only, 1 = solid.
+    var backgroundOpacity: Double {
+        get {
+            guard let opacity = defaults.object(forKey: Settings.opacityKey) as? Double else { return Settings.defaultOpacity }
+            return opacity.clamped(to: 0...1)
+        }
+        nonmutating set { defaults.set(newValue.clamped(to: 0...1), forKey: Settings.opacityKey) }
+    }
+}
+
+extension Double {
+    func clamped(to range: ClosedRange<Double>) -> Double {
+        Swift.min(Swift.max(self, range.lowerBound), range.upperBound)
+    }
 }
