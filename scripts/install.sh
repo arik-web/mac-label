@@ -13,8 +13,6 @@ trap 'rm -rf "$TMP"' EXIT
 if [[ "${1:-}" == "--local" ]]; then
     ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
     cp "$ROOT/build/MacLabel.zip" "$TMP/MacLabel.zip"
-elif command -v gh >/dev/null; then
-    gh release download --repo "$REPO" --pattern MacLabel.zip --dir "$TMP"
 else
     curl -fsSL -o "$TMP/MacLabel.zip" "https://github.com/$REPO/releases/latest/download/MacLabel.zip"
 fi

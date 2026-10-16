@@ -71,5 +71,10 @@ check(s3.backgroundOpacity == 0, "opacity clamped low")
 s3.backgroundOpacity = 0.25
 check(s3.backgroundOpacity == 0.25, "opacity stored")
 
+// launch-at-login default applies once
+let s4 = freshSettings()
+check(s4.takeFirstLaunchLoginDefault(), "first launch applies login default")
+check(!s4.takeFirstLaunchLoginDefault(), "later launches do not")
+
 print(failures == 0 ? "OK all tests passed" : "\(failures) failure(s)")
 exit(failures == 0 ? 0 : 1)

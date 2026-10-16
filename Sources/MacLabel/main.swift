@@ -34,6 +34,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self, selector: #selector(screensChanged),
             name: NSApplication.didChangeScreenParametersNotification, object: nil)
 
+        if settings.takeFirstLaunchLoginDefault(), SMAppService.mainApp.status != .enabled {
+            // Best effort: on failure the menu toggle shows off and can be retried.
+            try? SMAppService.mainApp.register()
+        }
+
         refresh()
     }
 

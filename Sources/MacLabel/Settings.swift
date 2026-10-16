@@ -50,6 +50,16 @@ struct Settings {
         nonmutating set { defaults.set(newValue, forKey: Settings.overlayKey) }
     }
 
+    static let loginDefaultKey = "loginItemDefaultApplied"
+
+    /// True exactly once per Mac: the first launch turns launch-at-login on,
+    /// and after that the menu toggle is the only thing that changes it.
+    func takeFirstLaunchLoginDefault() -> Bool {
+        guard !defaults.bool(forKey: Settings.loginDefaultKey) else { return false }
+        defaults.set(true, forKey: Settings.loginDefaultKey)
+        return true
+    }
+
     // MARK: Label style
 
     static let colorKey = "textColor"
