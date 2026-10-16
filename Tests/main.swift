@@ -1,0 +1,50 @@
+import Foundation
+
+// Plain executable test runner: XCTest ships only with Xcode, not the
+// Command Line Tools. Run via scripts/test.sh.
+
+var failures = 0
+
+func check(_ condition: Bool, _ message: String, line: Int = #line) {
+    if !condition {
+        failures += 1
+        print("FAIL line \(line): \(message)")
+    }
+}
+
+func freshSettings() -> Settings {
+    let suite = "maclabel.tests.\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suite)!
+    defaults.removePersistentDomain(forName: suite)
+    return Settings(defaults: defaults, systemName: { "Studio" })
+}
+
+// sanitize
+check(Settings.sanitize("  Mini  ") == "Mini", "trims whitespace")
+check(Settings.sanitize("   ") == nil, "blank is nil")
+check(Settings.sanitize("") == nil, "empty is nil")
+check(Settings.sanitize(String(repeating: "x", count: 100))?.count == Settings.maxNameLength, "caps length")
+
+// default name falls back to system name
+let s1 = freshSettings()
+check(s1.displayName == "Studio", "defaults to computer name")
+check(!s1.hasCustomName, "no custom name by default")
+
+// custom name is stored trimmed
+s1.setDisplayName("  Mac mini (left)  ")
+check(s1.displayName == "Mac mini (left)", "custom name stored trimmed")
+check(s1.hasCustomName, "custom name flagged")
+
+// empty resets to system name
+s1.setDisplayName("")
+check(s1.displayName == "Studio", "empty resets to computer name")
+check(!s1.hasCustomName, "reset clears custom flag")
+
+// overlay flag persists
+let s2 = freshSettings()
+check(!s2.overlayVisible, "overlay off by default")
+s2.overlayVisible = true
+check(s2.overlayVisible, "overlay toggles on")
+
+print(failures == 0 ? "OK all tests passed" : "\(failures) failure(s)")
+exit(failures == 0 ? 0 : 1)
