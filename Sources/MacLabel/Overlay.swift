@@ -59,7 +59,10 @@ final class Overlay {
         window.hasShadow = false
         window.ignoresMouseEvents = true
         window.isReleasedWhenClosed = false
-        window.level = .statusBar
+        // Screen-saver level: over the screen saver. The secure lock
+        // screen hides every app window at any level — there the label
+        // is baked into the wallpaper instead (see LockWallpaper).
+        window.level = .screenSaver
         window.collectionBehavior = [.canJoinAllSpaces, .stationary,
                                      .fullScreenAuxiliary, .ignoresCycle]
         return window

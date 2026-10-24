@@ -50,6 +50,63 @@ struct Settings {
         nonmutating set { defaults.set(newValue, forKey: Settings.overlayKey) }
     }
 
+    static let loginLockKey = "loginLockVisible"
+
+    /// User wants the label at the login window and on the lock screen.
+    /// Takes effect only after the one-time admin install in LoginLabel.
+    var loginLockVisible: Bool {
+        get { defaults.bool(forKey: Settings.loginLockKey) }
+        nonmutating set { defaults.set(newValue, forKey: Settings.loginLockKey) }
+    }
+
+    static let lockSizeKey = "lockFontSize"
+
+    /// Lock-screen label size in pt. 0 (default) = same as the on-screen size.
+    var lockFontSize: Double {
+        get {
+            guard let size = defaults.object(forKey: Settings.lockSizeKey) as? Double, size != 0 else { return 0 }
+            return size.clamped(to: Settings.fontSizeRange)
+        }
+        nonmutating set {
+            defaults.set(newValue == 0 ? 0 : newValue.clamped(to: Settings.fontSizeRange),
+                         forKey: Settings.lockSizeKey)
+        }
+    }
+
+    /// Size actually used on the lock screen: the lock size, or the
+    /// on-screen size when the lock size is left at "same".
+    var effectiveLockFontSize: Double {
+        lockFontSize == 0 ? fontSize : lockFontSize
+    }
+
+    static let wallpaperHashKey = "lockWallpaperHash"
+    static let wallpaperOriginalsKey = "wallpaperOriginals"
+
+    /// Fingerprint of the last baked lock wallpaper; empty = none baked.
+    var lockWallpaperHash: String {
+        get { defaults.string(forKey: Settings.wallpaperHashKey) ?? "" }
+        nonmutating set { defaults.set(newValue, forKey: Settings.wallpaperHashKey) }
+    }
+
+    /// Wallpaper paths in use before the first bake, per screen.
+    var wallpaperOriginals: [String] {
+        get { defaults.stringArray(forKey: Settings.wallpaperOriginalsKey) ?? [] }
+        nonmutating set { defaults.set(newValue, forKey: Settings.wallpaperOriginalsKey) }
+    }
+
+    /// Changes whenever anything drawn into the lock wallpaper changes.
+    static func lockWallpaperKey(name: String, colorHex: String, backgroundOpacity: Double,
+                                 effectiveLockFontSize: Double, sourcePaths: [String]) -> String {
+        ([name, colorHex, String(backgroundOpacity), String(effectiveLockFontSize)] + sourcePaths)
+            .joined(separator: "|")
+    }
+
+    /// Top-left corner that centers a box in a container. Centered, so
+    /// wallpaper fill-cropping at the edges can never cut the label off.
+    static func centeredOrigin(container: CGSize, box: CGSize) -> CGPoint {
+        CGPoint(x: (container.width - box.width) / 2, y: (container.height - box.height) / 2)
+    }
+
     static let loginDefaultKey = "loginItemDefaultApplied"
 
     /// True exactly once per Mac: the first launch turns launch-at-login on,

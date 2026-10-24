@@ -18,6 +18,7 @@ final class StyleMenu: NSObject {
     private let colorMenu = NSMenu()
     private let sizeMenu = NSMenu()
     private let opacityMenu = NSMenu()
+    private let lockSizeMenu = NSMenu()
 
     init(settings: Settings, onChange: @escaping () -> Void) {
         self.settings = settings
@@ -28,7 +29,8 @@ final class StyleMenu: NSObject {
 
     /// Top-level items to add to the status menu.
     var items: [NSMenuItem] {
-        [("Text color", colorMenu), ("Text size", sizeMenu), ("Background", opacityMenu)].map {
+        [("Text color", colorMenu), ("Text size", sizeMenu), ("Background", opacityMenu),
+         ("Lock screen size", lockSizeMenu)].map {
             let item = NSMenuItem(title: $0.0, action: nil, keyEquivalent: "")
             item.submenu = $0.1
             return item
@@ -42,6 +44,14 @@ final class StyleMenu: NSObject {
                           backgroundOpacity: settings.backgroundOpacity)
     }
 
+    /// Lock-screen style: same color and background as on screen,
+    /// size from the Lock screen size choice (default: the on-screen size).
+    var lockStyle: LabelStyle {
+        var style = style
+        style.fontSize = settings.effectiveLockFontSize
+        return style
+    }
+
     /// Ticks the current choice in each submenu.
     func refreshChecks() {
         colorMenu.items.forEach { $0.state = ($0.representedObject as? String) == settings.textColorHex ? .on : .off }
@@ -50,6 +60,7 @@ final class StyleMenu: NSObject {
             guard let value = $0.representedObject as? Double else { return }
             $0.state = abs(value - settings.backgroundOpacity) < 0.01 ? .on : .off
         }
+        lockSizeMenu.items.forEach { $0.state = ($0.representedObject as? Double) == settings.lockFontSize ? .on : .off }
     }
 
     private func build() {
@@ -68,6 +79,11 @@ final class StyleMenu: NSObject {
         for opacity in StyleMenu.opacities {
             let title = opacity == 0 ? "None (text only)" : "\(Int(opacity * 100))% dark"
             makeItem(title, #selector(pickOpacity(_:)), opacity, in: opacityMenu)
+        }
+
+        makeItem("Same as on-screen", #selector(pickLockSize(_:)), 0.0, in: lockSizeMenu)
+        for (name, size) in StyleMenu.sizes {
+            makeItem("\(name) (\(Int(size)) pt)", #selector(pickLockSize(_:)), size, in: lockSizeMenu)
         }
     }
 
@@ -105,6 +121,12 @@ final class StyleMenu: NSObject {
     @objc private func pickSize(_ sender: NSMenuItem) {
         guard let size = sender.representedObject as? Double else { return }
         settings.fontSize = size
+        onChange()
+    }
+
+    @objc private func pickLockSize(_ sender: NSMenuItem) {
+        guard let size = sender.representedObject as? Double else { return }
+        settings.lockFontSize = size
         onChange()
     }
 
