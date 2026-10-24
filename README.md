@@ -81,6 +81,12 @@ this app has nothing that needs SwiftUI.
   the very first (pre-boot) unlock screen is drawn by firmware and cannot
   show the label; it appears at the login window right after.
 
+## Windows version
+
+A Windows twin (tray app, same features including login & lock screens)
+lives in [`windows/`](windows/README.md), with prebuilt zips produced by
+`windows/build-windows.sh`.
+
 ## Licence
 
 Public domain — [The Unlicense](LICENSE). No copyright, no attribution
